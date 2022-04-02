@@ -7,7 +7,7 @@
 // If a new entity is added, it uses the default entity as its parent,
 // i.e. the parent specified in the constructor or most recent attachToEnityt call.
 
-import { isPreviewMode } from "@decentraland/EnvironmentAPI"
+//import { isPreviewMode } from "@decentraland/EnvironmentAPI"
 
 @Component("moving")
 export class Moving {
@@ -368,16 +368,16 @@ class BuilderHUD {
         engine.addSystem(this.rotator)
         this.setupUI()
         executeTask(async ()=>{
-            if(await isPreviewMode()){
-                log("in preview mode")
+            //if(await isPreviewMode()){
+            //    log("in preview mode")
                 hud.uiMinimizedContainer.visible = true
-            }
-            else{
-                log("not in preview mode")
-              hud.uiMinimizedContainer.visible =false
-              hud.uiMaximizedContainer.visible = false
-              engine.removeEntity(this.selectionPointer)
-            }
+           // }
+           // else{
+           //     log("not in preview mode")
+           //   hud.uiMinimizedContainer.visible =false
+           //   hud.uiMaximizedContainer.visible = false
+           //   engine.removeEntity(this.selectionPointer)
+           // }
         })
         //engine.addSystem(new MoveSystem(this.scaffolding, this.axis))
         this.movingSystem = new MoveSystem(this.scaffolding, this.axis)
