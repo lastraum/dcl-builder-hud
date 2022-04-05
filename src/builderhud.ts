@@ -7,7 +7,7 @@
 // If a new entity is added, it uses the default entity as its parent,
 // i.e. the parent specified in the constructor or most recent attachToEnityt call.
 
-//import { isPreviewMode } from "@decentraland/EnvironmentAPI"
+import { isPreviewMode } from "@decentraland/EnvironmentAPI"
 
 @Component("moving")
 export class Moving {
@@ -188,7 +188,7 @@ class BuilderHUD {
     rightWall:Entity
     frontWall:Entity
     backWall:Entity
-    transparent = new Texture("src/builderhud/transparent.png")
+    transparent = new Texture("https://bafkreietvz6ust5nb6zqzpz245dkhhcly6qpro7yp65vq6r7hqa7hrooea.ipfs.nftstorage.link/")
     scaffoldScale = new Vector3(1.2,1,1.2)
 
     movingSystem:MoveSystem
@@ -368,16 +368,16 @@ class BuilderHUD {
         engine.addSystem(this.rotator)
         this.setupUI()
         executeTask(async ()=>{
-            //if(await isPreviewMode()){
-            //    log("in preview mode")
+            if(await isPreviewMode()){
+                log("in preview mode")
                 hud.uiMinimizedContainer.visible = true
-           // }
-           // else{
-           //     log("not in preview mode")
-           //   hud.uiMinimizedContainer.visible =false
-           //   hud.uiMaximizedContainer.visible = false
-           //   engine.removeEntity(this.selectionPointer)
-           // }
+            }
+            else{
+                log("not in preview mode")
+              hud.uiMinimizedContainer.visible =false
+              hud.uiMaximizedContainer.visible = false
+              engine.removeEntity(this.selectionPointer)
+            }
         })
         //engine.addSystem(new MoveSystem(this.scaffolding, this.axis))
         this.movingSystem = new MoveSystem(this.scaffolding, this.axis)
@@ -391,7 +391,7 @@ class BuilderHUD {
     async setupUI (){
         this.isSetup = true
         // load the image atlas
-        let imageAtlas = "src/builderhud/builderhud.png"
+        let imageAtlas = "https://bafkreibc3p3exlkrdvqw7jejzot4b2wcc2zd4h5lvxrd47c6ycgqnshxuq.ipfs.nftstorage.link/"
         let imageTexture = new Texture(imageAtlas)
 
         // Create canvas component
@@ -1310,7 +1310,8 @@ class BuilderHUD {
         if (this.newEntityShape==null){
             //load the placement widget the first time it is needed
             try {
-                this.newEntityShape = new GLTFShape("models/xyz/xyzLeftHand.glb")
+                //this.newEntityShape = new GLTFShape("models/xyz/xyzLeftHand.glb")
+                this.newEntityShape = new BoxShape()
             }
             catch (e){
                 // user doesn't have the pointer mesh in the above path, so use a green box
