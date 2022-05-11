@@ -3,7 +3,7 @@
 // (c) 2019 Carl Fravel
 // See the Readme for instructions
 // Notes: 
-// Has the concept of a default parent, initially null, but updated by the constructor or any attachToEntity params
+// Has the concept of a default par6ent, initially null, but updated by the constructor or any attachToEntity params
 // If a new entity is added, it uses the default entity as its parent,
 // i.e. the parent specified in the constructor or most recent attachToEnityt call.
 
@@ -118,9 +118,8 @@ class BuilderHUD {
     rotator:any
 
     selectionPointer:any
-    selectionPointerShape: Shape
-    selectionPointerScale:number=0.3
-    selectionPointerElevation:number = .5 // how much the selection pointer is raised relative to the root of the selected object.
+    selectionPointerScale:number=1
+    selectionPointerElevation:number = 1 // how much the selection pointer is raised relative to the root of the selected object.
                                          // TODO provide a means to adjust its elevation, or to determine top of object and put it above that.
     newEntityShape:any
     newEntityScale:number = 0.1
@@ -142,6 +141,8 @@ class BuilderHUD {
     maximizeButton:any
 
     displayName:any
+    displayPRS:any
+    scaffoldTitle:any
 
     qButton:any
     wButton:any
@@ -188,7 +189,7 @@ class BuilderHUD {
     rightWall:Entity
     frontWall:Entity
     backWall:Entity
-    transparent = new Texture("https://bafkreietvz6ust5nb6zqzpz245dkhhcly6qpro7yp65vq6r7hqa7hrooea.ipfs.nftstorage.link/")
+    transparent = new Texture("src/builderhud/transparent.png")
     scaffoldScale = new Vector3(1.2,1,1.2)
 
     movingSystem:MoveSystem
@@ -351,21 +352,14 @@ class BuilderHUD {
 
 
         this.selectionPointer = new Entity()
-        try {
-            this.selectionPointerShape = new GLTFShape("")
-        }
-        catch (e){
-            // user doesn't have the pointer mesh in the above path, so use a red box
-            this.selectionPointerShape = new BoxShape()
-            let mtl = new Material()
-            mtl.albedoColor = Color3.Red()
-            this.selectionPointer.addComponent(mtl)
-        }
-        this.selectionPointer.addComponent(this.selectionPointerShape)
+        this.selectionPointer.addComponent(new PlaneShape())
+        this.selectionPointer.getComponent(PlaneShape).withCollisions = false
+        this.selectionPointer.addComponent(new BasicMaterial())
+        this.selectionPointer.getComponent(BasicMaterial).texture = new Texture("https://bafkreihg3sjtj3glg2dear6dzt5fb7rxovz6rrqfpx3azsy5h76cqqoe24.ipfs.nftstorage.link/")
+        this.selectionPointer.getComponent(BasicMaterial).alphaTest = 1
         this.selectionPointer.addComponent(new Transform())
-        this.rotator = new EntityRotator()
-        this.rotator.setup(this.selectionPointer,100)
-        engine.addSystem(this.rotator)
+        this.selectionPointer.addComponent(new Billboard(false,true,false))
+
         this.setupUI()
         executeTask(async ()=>{
             if(await isPreviewMode()){
@@ -391,7 +385,7 @@ class BuilderHUD {
     async setupUI (){
         this.isSetup = true
         // load the image atlas
-        let imageAtlas = "https://bafkreibc3p3exlkrdvqw7jejzot4b2wcc2zd4h5lvxrd47c6ycgqnshxuq.ipfs.nftstorage.link/"
+        let imageAtlas = "src/builderhud/builderhud.png"
         let imageTexture = new Texture(imageAtlas)
 
         // Create canvas component
@@ -625,12 +619,42 @@ class BuilderHUD {
 
         this.displayName = new UIText(this.uiMaximizedContainer)
         this.displayName.hAlign = 'center'
-        this.displayName.vAlign = 'bottom'
-        this.displayName.positionY = 220
+        this.displayName.vAlign = 'top'
+        this.displayName.positionY = -180
         this.displayName.positionX = 0
         this.displayName.height = 10
         this.displayName.fontSize = 12
         this.displayName.hTextAlign = "center"
+
+        let entityLabel = new UIText(this.uiMaximizedContainer)
+         entityLabel.hAlign = 'center'
+         entityLabel.vAlign = 'top'
+         entityLabel.positionY = -160
+         entityLabel.positionX = 0
+         entityLabel.height = 10
+         entityLabel.fontSize = 12
+         entityLabel.hTextAlign = "center"
+         entityLabel.value = "Entity Label"
+
+        this.displayPRS = new UIText(this.uiMaximizedContainer)
+        this.displayPRS.hAlign = 'center'
+        this.displayPRS.vAlign = 'top'
+        this.displayPRS.positionY = -200
+        this.displayPRS.positionX = 0
+        this.displayPRS.height = 10
+        this.displayPRS.fontSize = 12
+        this.displayPRS.hTextAlign = "center"
+        this.displayPRS.value = "(0,0,0)"
+
+        this.scaffoldTitle = new UIText(this.uiMaximizedContainer)
+        this.scaffoldTitle.hAlign = 'center'
+        this.scaffoldTitle.vAlign = 'top'
+        this.scaffoldTitle.positionY = -25
+        this.scaffoldTitle.positionX = -45
+        this.scaffoldTitle.height = 10
+        this.scaffoldTitle.fontSize = 8
+        this.scaffoldTitle.hTextAlign = "center"
+        this.scaffoldTitle.value = "Scaffold"
 
 
         // ROW 3
@@ -873,7 +897,7 @@ class BuilderHUD {
         this.snapLabel.isPointerBlocker = false
 
         // call this during setup to get the mode and snap buttons labelled initially
-        this.applyModeAndSnapLabels()
+        this.applyModeAndSnapLabels(true)
 
 
 
@@ -933,7 +957,7 @@ class BuilderHUD {
                 break
         }
     }
-    applyModeAndSnapLabels(){
+    applyModeAndSnapLabels(init?:boolean){
         // Put the edit mode onto the button's label
         switch (this.mode) {
             case this.modePOSITION:
@@ -949,6 +973,8 @@ class BuilderHUD {
                     this.modeLabel.value="ERR"
                     
         }  
+        init ? null : this.updateDisplayPRS()
+
         switch (this.snap){
             case 0:
                 if (this.mode == this.modeROTATION){
@@ -988,6 +1014,27 @@ class BuilderHUD {
         }
     }
 
+    countDecimals(num:number) {
+        if(Math.floor(num) === num) return 0;
+        return num.toString().split(".")[1].length || 0; 
+    }
+
+    updateDisplayPRS(){
+        switch(this.mode){
+            case this.modePOSITION:
+                this.displayPRS.value = "POS: (" + this.entities[this.selectedEntityIndex].entity.getComponent(Transform).position.x.toFixed(this.countDecimals(this.snapPosScale)) + "," + this.entities[this.selectedEntityIndex].entity.getComponent(Transform).position.y.toFixed(this.countDecimals(this.snapPosScale)) + "," + this.entities[this.selectedEntityIndex].entity.getComponent(Transform).position.z.toFixed(this.countDecimals(this.snapPosScale)) + ")"
+                break;
+
+            case this.modeROTATION:
+                this.displayPRS.value = "ROT: (" + Math.ceil(this.entities[this.selectedEntityIndex].entity.getComponent(Transform).rotation.eulerAngles.x) + "," + Math.ceil(this.entities[this.selectedEntityIndex].entity.getComponent(Transform).rotation.eulerAngles.y) + "," + Math.ceil(this.entities[this.selectedEntityIndex].entity.getComponent(Transform).rotation.eulerAngles.z) + ")"
+                break;
+
+            case this.modeSCALE:
+                this.displayPRS.value = "SCL: (" + this.entities[this.selectedEntityIndex].entity.getComponent(Transform).scale.x.toFixed(this.countDecimals(this.snapPosScale)) + "," + this.entities[this.selectedEntityIndex].entity.getComponent(Transform).scale.y.toFixed(this.countDecimals(this.snapPosScale)) + "," + this.entities[this.selectedEntityIndex].entity.getComponent(Transform).scale.z.toFixed(this.countDecimals(this.snapPosScale)) + ")"
+                break;
+        }
+    }
+
     maximizeUI(){
         this.uiMinimizedContainer.visible = false
         this.uiMaximizedContainer.visible = true
@@ -998,6 +1045,7 @@ class BuilderHUD {
         this.mode=this.modePOSITION
         this.applyModeAndSnapLabels()
         this.displayName.value = this.entities[this.selectedEntityIndex].entity.name
+        this.updateDisplayPRS()
         this.scaffolding.getComponent(Transform).scale = this.scaffoldScale
         this.axis.getComponent(Transform).scale = Vector3.One()
     }
@@ -1029,31 +1077,31 @@ class BuilderHUD {
         //if (!this.uiMaximized) { // when you set the entity's parent, the entity is added to the engine if the parent is already added 
         //    engine.removeEntity(this.selectionPointer)  // TODO will this ever occur when pointer isn't in engine?
         //}
-        let selectedEntityTransform:Transform = this.entities[selectedEntityIndex].entity.getComponent(Transform)
-        let y = selectedEntityTransform.position.y + this.selectionPointerElevation
+        let selectedEntityTransform = this.entities[selectedEntityIndex].entity.getComponent(Transform).position.clone()
+        let y = selectedEntityTransform.y + this.selectionPointerElevation
         //CF TODO if we ever want to align the pointer with the object, e.g. if not rotating it, then find better way, because this one ties the parent entity and pointer entity's rotations together:
         //this.selectionPointer.addComponentOrReplace(new Transform({position:new Vector3(selectedEntityTransform.position.x, selectedEntityTransform.position.y+this.selectionPointerElevation, selectedEntityTransform.position.z), rotation: selectedEntityTransform.rotation}))
         let t = new Transform({
-            position:new Vector3(0, y, 0),
+            position:new Vector3(0, this.selectionPointerElevation, 0),
             scale: new Vector3( // compensate for any scale changes the selected (parent) entity may have on the pointer scale
                 this.selectionPointerScale/this.entities[selectedEntityIndex].transform.scale.x,
                 this.selectionPointerScale/this.entities[selectedEntityIndex].transform.scale.y,
                 this.selectionPointerScale/this.entities[selectedEntityIndex].transform.scale.z,
-                )
+                ),
+                rotation: Quaternion.Euler(0,0,180)
             })
         this.selectionPointer.addComponentOrReplace(t)
-        // adding/removing it from engine is done with maximimizing/minimizing HUD
-        
-        this.rotator.setup(this.selectionPointer,100)
     }
 
     selectPrevious(){
         if (this.selectedEntityIndex>0)
             this.selectEntity(this.selectedEntityIndex-1)
+            this.updateDisplayPRS()
     }
     selectNext(){
         if (this.selectedEntityIndex<this.numEntities-1)
             this.selectEntity(this.selectedEntityIndex+1)
+            this.updateDisplayPRS()
     }
     discardSelected(){
         log("Discard Selected Entity isn't implemented at this time.")
@@ -1221,6 +1269,7 @@ class BuilderHUD {
             default:
                 break
         }
+        this.updateDisplayPRS()
     }
 
     async attachToEntity(entity:Entity, preexisting:boolean = true){
@@ -1310,8 +1359,7 @@ class BuilderHUD {
         if (this.newEntityShape==null){
             //load the placement widget the first time it is needed
             try {
-                //this.newEntityShape = new GLTFShape("models/xyz/xyzLeftHand.glb")
-                this.newEntityShape = new BoxShape()
+                this.newEntityShape = new GLTFShape("models/xyz/xyzLeftHand.glb")
             }
             catch (e){
                 // user doesn't have the pointer mesh in the above path, so use a green box
@@ -1362,33 +1410,6 @@ class BuilderHUD {
     }
     refreshDisplay (){
         //TODO update the list of objects etc. in HUD
-    }
-}
-
-class EntityRotator implements ISystem {
-    rotatingEntity: any
-    rotatingEntityParent: any
-    speed: any
-    firstUpdate:boolean = true
-
-    constructor (){
-    }
-
-    setup(rotatingEntity: Entity, speed:number){
-        this.rotatingEntity = rotatingEntity
-        this.speed = speed
-    }
-    update (dt:number) {
-        if (this.firstUpdate){
-            this.firstUpdate = false
-        }
-        try {
-            let transform:Transform = this.rotatingEntity.getComponent(Transform)
-            transform.rotate(Vector3.Up(), dt * this.speed)
-        }
-        catch {
-            // just do nothing.
-        }
     }
 }
 
