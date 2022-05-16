@@ -385,7 +385,7 @@ class BuilderHUD {
     async setupUI (){
         this.isSetup = true
         // load the image atlas
-        let imageAtlas = "src/builderhud/builderhud.png"
+        let imageAtlas = "https://lsnft.mypinata.cloud/ipfs/QmYyDWc67svskJWxQrZNJxjwNsvsXyG9dvVzXvJtYtmgAr"
         let imageTexture = new Texture(imageAtlas)
 
         // Create canvas component
