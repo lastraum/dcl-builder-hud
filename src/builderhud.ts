@@ -189,7 +189,7 @@ class BuilderHUD {
     rightWall:Entity
     frontWall:Entity
     backWall:Entity
-    transparent = new Texture("src/builderhud/transparent.png")
+    transparent = new Texture("https://lsnft.mypinata.cloud/ipfs/QmaqcRuouE6Tip9acZmjxMyBftEA5aHASRDjn8Bmad87Ld")
     scaffoldScale = new Vector3(1.2,1,1.2)
 
     movingSystem:MoveSystem
