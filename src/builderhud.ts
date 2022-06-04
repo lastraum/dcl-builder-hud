@@ -25,12 +25,7 @@ export class Moving {
 const myGroup = engine.getComponentGroup(Moving)
 export class MoveSystem implements ISystem {
 
-    axis:Entity
     positions:Vector3[] = []
-
-    constructor(scaffold:Entity, axis:Entity){
-        this.axis = axis
-    }
 
     addCameraPosition(pos:Vector3){
         this.positions.push(pos)
@@ -60,14 +55,14 @@ export class MoveSystem implements ISystem {
                 if(direction == "up"){
                     if(position.y < 150){
                       position.y += .1
-                      this.axis.getComponent(Transform).position.y += .1
+                      //this.axis.getComponent(Transform).position.y += .1
                     }
                   }
             
                   if(direction == "down"){
                     if(position.y > .2){
                       position.y -= .1
-                      this.axis.getComponent(Transform).position.y -= .1
+                      //this.axis.getComponent(Transform).position.y -= .1
                     }
                     else{
                         entity.removeComponent(Moving)
@@ -183,7 +178,7 @@ class BuilderHUD {
     scaffloor:Entity
     showingColliders: boolean = false
 
-    axis:Entity
+    //axis:Entity
 
     leftWall:Entity
     rightWall:Entity
@@ -194,43 +189,30 @@ class BuilderHUD {
 
     movingSystem:MoveSystem
 
-    unsavedContainer: UIContainerRect
-
     transparentMat: BasicMaterial
+    unsavedContainer:UIContainerRect
 
     constructor () {
-
-        this.unsavedContainer = new UIContainerRect(this.canvas)
-        this.unsavedContainer.hAlign = 'right'
-        this.unsavedContainer.vAlign = 'bottom'
-        this.unsavedContainer.width = 160
-        this.unsavedContainer.height = 20
-        this.unsavedContainer.positionY = 530
-
-        this.unsavedContainer.positionX = 0
-        this.unsavedContainer.color = Color4.Red()
-        this.unsavedContainer.visible = false
 
         this.transparentMat = new BasicMaterial()
         this.transparentMat.alphaTest = 1
         this.transparentMat.texture = this.transparent
 
-        var changes = new UIText(this.unsavedContainer)
-        changes.hAlign = 'center'
-        changes.vAlign = 'center'
-        changes.positionY = 0
-        changes.positionX = 0
-        changes.height = 10
-        changes.fontSize = 12
-        changes.hTextAlign = "center"
-        changes.value = "** Unsaved Changes **"
 
-        this.axis = new Entity()
-        this.axis.addComponent(new Transform({
-            position: new Vector3(0,1,0),
+
+        this.scaffolding = new Entity()
+        this.scaffolding.addComponent(new Transform({
+            position: new Vector3(1,.3,1),
             scale: Vector3.Zero()
         }))
-        engine.addEntity(this.axis)
+        engine.addEntity(this.scaffolding)
+
+        let axis = new Entity()
+        axis.addComponent(new Transform({
+            position: new Vector3(-.5,1,-.5),
+            scale: Vector3.One()
+        }))
+        axis.setParent(this.scaffolding)
 
         var xaxis = new Entity()
         xaxis.addComponent(new BoxShape())
@@ -238,7 +220,7 @@ class BuilderHUD {
             position: new Vector3(2,0,.1),
             scale: new Vector3(4,.1,.1)
         }))
-        xaxis.setParent(this.axis)
+        xaxis.setParent(axis)
         xaxis.getComponent(BoxShape).withCollisions = false
         xaxis.addComponent(new Material())
         xaxis.getComponent(Material).albedoColor = Color4.Red()
@@ -246,10 +228,10 @@ class BuilderHUD {
         var xaxisText = new Entity()
         xaxisText.addComponent(new TextShape("X"))
         xaxisText.addComponent(new Transform({
-            position: new Vector3(3,.5,.2)
+            position: new Vector3(3,.5,.4)
         }))
         xaxisText.addComponent(new Billboard(false,true,false))
-        xaxisText.setParent(this.axis)
+        xaxisText.setParent(axis)
 
         var yaxis = new Entity()
         yaxis.addComponent(new BoxShape())
@@ -257,7 +239,7 @@ class BuilderHUD {
             position: new Vector3(.1,2,.1),
             scale: new Vector3(.1,4,.1)
         }))
-        yaxis.setParent(this.axis)
+        yaxis.setParent(axis)
         yaxis.getComponent(BoxShape).withCollisions = false
         yaxis.addComponent(new Material())
         yaxis.getComponent(Material).albedoColor = Color4.Green()
@@ -268,7 +250,7 @@ class BuilderHUD {
             position: new Vector3(.5,3,.5)
         }))
         yaxisText.addComponent(new Billboard(false,true,false))
-        yaxisText.setParent(this.axis)
+        yaxisText.setParent(axis)
 
         var zaxis = new Entity()
         zaxis.addComponent(new BoxShape())
@@ -276,7 +258,7 @@ class BuilderHUD {
             position: new Vector3(.1,0,2),
             scale: new Vector3(.1,.1,4)
         }))
-        zaxis.setParent(this.axis)
+        zaxis.setParent(axis)
         zaxis.addComponent(new Material())
         zaxis.getComponent(BoxShape).withCollisions = false
         zaxis.getComponent(Material).albedoColor = Color4.Blue()
@@ -287,14 +269,7 @@ class BuilderHUD {
             position: new Vector3(.4,1,4)
         }))
         zaxisText.addComponent(new Billboard(false,true,false))
-        zaxisText.setParent(this.axis)
-
-        this.scaffolding = new Entity()
-        this.scaffolding.addComponent(new Transform({
-            position: new Vector3(1,.3,1),
-            scale: Vector3.Zero()
-        }))
-        engine.addEntity(this.scaffolding)
+        zaxisText.setParent(axis)
 
         this.scaffloor = new Entity()
         this.scaffloor.addComponent(new PlaneShape()) 
@@ -303,6 +278,7 @@ class BuilderHUD {
             rotation: Quaternion.Euler(90,0,0),
             scale: Vector3.One()
         }))
+        this.scaffloor.addComponent(new Material())
         engine.addEntity(this.scaffloor)
         this.scaffloor.setParent(this.scaffolding)
 
@@ -355,9 +331,9 @@ class BuilderHUD {
         this.selectionPointer.addComponent(new PlaneShape())
         this.selectionPointer.getComponent(PlaneShape).withCollisions = false
         this.selectionPointer.addComponent(new BasicMaterial())
-        this.selectionPointer.getComponent(BasicMaterial).texture = new Texture("https://bafkreihg3sjtj3glg2dear6dzt5fb7rxovz6rrqfpx3azsy5h76cqqoe24.ipfs.nftstorage.link/")
-        this.selectionPointer.getComponent(BasicMaterial).alphaTest = 1
-        this.selectionPointer.addComponent(new Transform())
+        this.selectionPointer.getComponent(BasicMaterial).texture = new Texture("https://lsnft.mypinata.cloud/ipfs/QmWbKQtJjsLjgDFinoH6fvmbUoetLZd7LanChC1R4QkA2e")
+        //this.selectionPointer.getComponent(BasicMaterial).alphaTest = 1
+        this.selectionPointer.addComponent(new Transform({rotation: Quaternion.Euler(0,0,180), scale: Vector3.One()}))
         this.selectionPointer.addComponent(new Billboard(false,true,false))
 
         this.setupUI()
@@ -373,8 +349,32 @@ class BuilderHUD {
               engine.removeEntity(this.selectionPointer)
             }
         })
+
+
+        this.unsavedContainer = new UIContainerRect(this.uiMaximizedContainer)
+        this.unsavedContainer.hAlign = 'center'
+        this.unsavedContainer.vAlign = 'center'
+        this.unsavedContainer.width = 160
+        this.unsavedContainer.height = 20
+        this.unsavedContainer.positionY = 225
+
+        this.unsavedContainer.positionX = 0
+        this.unsavedContainer.color = Color4.Red()
+        this.unsavedContainer.visible = false
+
+
+        var changes = new UIText(this.unsavedContainer)
+        changes.hAlign = 'center'
+        changes.vAlign = 'center'
+        changes.positionY = 0
+        changes.positionX = 0
+        changes.height = 10
+        changes.fontSize = 12
+        changes.hTextAlign = "center"
+        changes.value = "** Unsaved Changes **"
+
         //engine.addSystem(new MoveSystem(this.scaffolding, this.axis))
-        this.movingSystem = new MoveSystem(this.scaffolding, this.axis)
+        this.movingSystem = new MoveSystem()
         engine.addSystem(this.movingSystem)
     }
 
@@ -449,7 +449,6 @@ class BuilderHUD {
         this.uiMaximizedContainer.color = new Color4(0, 0, 0, 0.75)
         //this.uiMaximizedContainer.stackOrientation = UIStackOrientation.VERTICAL
 
-
         var returnHome = new UIImage(this.uiMaximizedContainer, imageTexture)
         returnHome.sourceLeft = 826
         returnHome.sourceTop = 184
@@ -465,7 +464,6 @@ class BuilderHUD {
         
         returnHome.onClick = new OnClick(() => {
             this.toggleLift.sourceLeft = 503
-            this.axis.getComponent(Transform).position.y = 1
             this.toggleColliders(true)
             engine.addSystem(new ClickAnimationSystem(returnHome))
         })
@@ -1047,7 +1045,6 @@ class BuilderHUD {
         this.displayName.value = this.entities[this.selectedEntityIndex].entity.name
         this.updateDisplayPRS()
         this.scaffolding.getComponent(Transform).scale = this.scaffoldScale
-        this.axis.getComponent(Transform).scale = Vector3.One()
     }
     minimizeUI(){
         this.uiMaximizedContainer.visible = false
@@ -1057,7 +1054,6 @@ class BuilderHUD {
             engine.removeEntity(this.selectionPointer)
         }
         this.scaffolding.getComponent(Transform).scale = Vector3.Zero()
-        this.axis.getComponent(Transform).scale = Vector3.Zero()
     }
     showUI() {
         this.canvas.visible = true
@@ -1067,30 +1063,18 @@ class BuilderHUD {
         this.canvas.visible = false
         this.canvas.isPointerBlocker = false
     }
+
+    updateSelectionPointerPOS(transform:TransformConstructorArgs){
+        let selectedEntityTransform = transform.position!.clone()
+        this.selectionPointer.getComponent(Transform).position = new Vector3(selectedEntityTransform.x, selectedEntityTransform.y + this.selectionPointerElevation, selectedEntityTransform.z)
+    }
     selectEntity(selectedEntityIndex:number){
         this.selectedEntityIndex = selectedEntityIndex
         if (this.entities[selectedEntityIndex].entity == null){
             return
         }
         this.displayName.value = this.entities[this.selectedEntityIndex].entity.name
-        this.selectionPointer.setParent(this.entities[selectedEntityIndex].entity)
-        //if (!this.uiMaximized) { // when you set the entity's parent, the entity is added to the engine if the parent is already added 
-        //    engine.removeEntity(this.selectionPointer)  // TODO will this ever occur when pointer isn't in engine?
-        //}
-        let selectedEntityTransform = this.entities[selectedEntityIndex].entity.getComponent(Transform).position.clone()
-        let y = selectedEntityTransform.y + this.selectionPointerElevation
-        //CF TODO if we ever want to align the pointer with the object, e.g. if not rotating it, then find better way, because this one ties the parent entity and pointer entity's rotations together:
-        //this.selectionPointer.addComponentOrReplace(new Transform({position:new Vector3(selectedEntityTransform.position.x, selectedEntityTransform.position.y+this.selectionPointerElevation, selectedEntityTransform.position.z), rotation: selectedEntityTransform.rotation}))
-        let t = new Transform({
-            position:new Vector3(0, this.selectionPointerElevation, 0),
-            scale: new Vector3( // compensate for any scale changes the selected (parent) entity may have on the pointer scale
-                this.selectionPointerScale/this.entities[selectedEntityIndex].transform.scale.x,
-                this.selectionPointerScale/this.entities[selectedEntityIndex].transform.scale.y,
-                this.selectionPointerScale/this.entities[selectedEntityIndex].transform.scale.z,
-                ),
-                rotation: Quaternion.Euler(0,0,180)
-            })
-        this.selectionPointer.addComponentOrReplace(t)
+        this.updateSelectionPointerPOS(this.entities[selectedEntityIndex].entity.getComponent(Transform))
     }
 
     selectPrevious(){
@@ -1214,6 +1198,7 @@ class BuilderHUD {
                     default:
                         break
                 }
+                this.updateSelectionPointerPOS(transform)
                 break
             case this.modeROTATION:
 
