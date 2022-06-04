@@ -33,7 +33,7 @@ var box = new Entity("Box")
 ```
 var box = new Entity("Box")
 box.addComponent(new BoxShape())
-box.addComponent(new Transform({position: new Vector3(6.626,3.1,8.9), rotation: Quaternion.Euler(49.385,158.434,347.608), scale: new Vector3(3.6,3.9,3)}))
+box.addComponent(new Transform({position: new Vector3(4,1,8), rotation: Quaternion.Euler(0,0,0), scale: new Vector3(1,1,1)}))
 engine.addEntity(box)
 hud.attachToEntity(box)
 ```
