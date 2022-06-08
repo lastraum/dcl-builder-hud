@@ -5,6 +5,8 @@ Positioning entities in the sdk can be very difficult - always guessing the x,y,
 - Add the hud to as many entities as you want!
 
 
+![](screenshots/hud.png)
+
 ## Install
 
 To use any of the helpers provided by this library:
@@ -37,3 +39,49 @@ box.addComponent(new Transform({position: new Vector3(4,1,8), rotation: Quaterni
 engine.addEntity(box)
 hud.attachToEntity(box)
 ```
+
+
+## Using the HUD
+
+Once you've followed the steps to add the entities you want to deal with to the HUD, follow these steps:
+
+1) Open a preview of the scene normally, with `dcl start`.
+
+2) On the right-hand margin, click the Builder HUD icon to open the full UI.
+
+	> Note: This icon might be obstructed by the FPS Panel. You can close this panel by opening the Debug Menu (on the right of the minimap), and toggling the eye icon next to "FPS Panel".
+
+3) Click the left and right icons ( **<** **>**) to **select an entity** to handle. The name of the currently selected entity will be displayed in the UI, a green marker will also appear on top of the selected entity.
+
+	![](screenshots/marker.png)
+
+4) Toggle between **P**: Position, **R** Rotation and **S** Scale. Then toggle between the different levels of precision for each adjustment (1, 0.1, 0.01, etc).
+
+5) Use the labeled direction arrows to move/rotate/scale the entity.
+
+6) Once you're done, click the **save icon** to print out the transform values of each of the entities handled by the Builder HUD to console. To see these values, open up the browser console; In Google Chrome go to **View > Developer > Javascript console**.
+
+7) Return to your scene's code, and paste the new transform values on an entity you wish to adjust, when creating its `Transform` component.
+
+	For example, for the "Box" entity, you can paste its values in the following snippet:
+
+	```ts
+	var box = new Entity("Box")
+	box.addComponent(new BoxShape())
+	box.addComponent(new Transform( <PASTE HERE>)
+	engine.addEntity(box)
+	hud.attachToEntity(box)
+	```
+
+> Note: The Builder HUD is only available while in preview mode. Once your scene is published, players in your scene won't see this UI.
+
+
+## The scaffold
+
+Use the scaffold to reach high vantage points that might not be accessible to players in the scene. This might make it a lot easier to position certain entities.
+
+The scaffold starts out on the ground in the scene's south-east corner. Hop on to the platform, then use the arrows in the upper section of the Builder Hud UI to move it around.
+
+Once it starts moving in one direction, it will keep moving till you press another direction key. You can also press the **Reset icon** (on the top-left corner of the UI) to return the scaffold to its initial location on the ground.
+
+![](screenshots/scaffold.gif)
